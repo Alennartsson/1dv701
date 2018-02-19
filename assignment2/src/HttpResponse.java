@@ -36,9 +36,6 @@ public class HttpResponse {
             isImage = false;
         } else{
             String path = request.getFilePath();
-            if(!path.endsWith("/") && !path.equals("")){
-                path += "/";
-            }
             File f = new File(path);
             System.out.println(f.getAbsolutePath());
             File[] matchingFiles = f.listFiles(new FilenameFilter() {
@@ -57,6 +54,7 @@ public class HttpResponse {
                     setResponse(new String(buf, 0, byteReader));
                 }
                 isImage = false;
+                System.out.println("tja");
             }
         }
 
