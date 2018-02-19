@@ -5,6 +5,7 @@ import java.io.IOException;
 public class HttpResponse {
 
     public String response;
+    private byte[] data;
 
     public HttpResponse(HttpRequest request, byte[] buf , int id) throws IOException {
         FileInputStream file = null;
@@ -16,9 +17,16 @@ public class HttpResponse {
             System.out.println("File not found for: "+id);
         }
         int byteReader = 0;
-        while ((byteReader = file.read(buf)) != -1){
-               setResponse(new String(buf, 0 , byteReader));
+        if(request.getFilePath().matches(".*.png")){
+            data = new byte[(int) request.getFilePath().length()];
+            file.read(data);
         }
+        else{
+            while ((byteReader = file.read(buf)) != -1){
+                setResponse(new String(buf, 0 , byteReader));
+            }
+        }
+
        file.close();
     }
 
