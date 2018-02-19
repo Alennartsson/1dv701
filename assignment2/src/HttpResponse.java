@@ -36,25 +36,26 @@ public class HttpResponse {
             isImage = false;
         } else{
             String path = request.getFilePath();
+            if(path.isEmpty()){
+                path +=System.getProperty("user.dir");
+            }
             File f = new File(path);
-            System.out.println(f.getAbsolutePath());
-            File[] matchingFiles = f.listFiles(new FilenameFilter() {
+            File[] matchingFiles = f.listFiles(new FileFilter() {
                 @Override
-                public boolean accept(File dir, String name) {
-                    return name.startsWith("index") || name.startsWith("Index") && name.endsWith(".html") || name.endsWith(".htm");
+                public boolean accept(File pathname) {
+                    String name = pathname.getName().toLowerCase();
+                    return name.startsWith("index") && name.endsWith(".html") || name.endsWith(".htm");
                 }
             });
 
             if(matchingFiles.length == 0){
                 System.out.println("cant find index file!");
             }else {
-                System.out.println("test");
                 file = new FileInputStream(matchingFiles[0].getAbsolutePath());
                 while ((byteReader = file.read(buf)) != -1) {
                     setResponse(new String(buf, 0, byteReader));
                 }
                 isImage = false;
-                System.out.println("tja");
             }
         }
 
