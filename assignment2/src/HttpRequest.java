@@ -1,6 +1,6 @@
 public class HttpRequest {
 
-    private String file;
+    private String filePath;
     private String req;
     private String version;
 
@@ -8,7 +8,7 @@ public class HttpRequest {
 
         String[] tmp = path.split("\n");
         setReq(tmp[0].split(" ")[0]);
-        setFile(tmp[0].split(" ")[1]);
+        setFilePath(tmp[0].split(" ")[1]);
         setVersion(tmp[0].split(" ")[2]);
 
     }
@@ -17,19 +17,19 @@ public class HttpRequest {
         this.req = req;
     }
 
-    private String getReq(){
+    public String getReq(){
         return req;
     }
 
-    private void setFile(String file){
-        this.file = file;
+    private void setFilePath(String file){
+        this.filePath = file;
     }
 
-    public String getFile(){
-        return file;
+    public String getFilePath(){
+        return filePath;
     }
 
-    public void setVersion(String ver){
+    private void setVersion(String ver){
         this.version = ver;
     }
 

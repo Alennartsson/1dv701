@@ -39,6 +39,8 @@ class tcpClient extends Thread{
                     int byteReader = in.read(buf);      //We read the received package from the client
                     if (byteReader != -1) {     //If that package isnt lower than 0, lower than 0 means that it dont contain any message.Then we should load a new package.
                         finalMessage = new String(buf, 0, byteReader);      //Add that package to the string
+                        HttpRequest request = new HttpRequest(finalMessage);
+                        System.out.println("Filepath: "+request.getFilePath() +" requestType: " +request.getReq() +" HttpVersion: " +request.getVersion());
                         System.out.println("finalmessage: "+finalMessage);
                         out.write(finalMessage.getBytes());             //Send that message to the client, this is done untill the hole message is sent.
                         System.out.printf("TCP echo request from %s", tcpSocket.getInetAddress());
