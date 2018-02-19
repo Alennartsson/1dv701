@@ -6,19 +6,19 @@ public class HttpResponse {
 
     private String response;
 
-    public HttpResponse(HttpRequest request, byte[] buf) throws IOException {
+    public HttpResponse(HttpRequest request, byte[] buf , int id) throws IOException {
         FileInputStream file = null;
         try {
             file = new FileInputStream(request.getFilePath());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            System.out.println("File not found");
+            System.out.println("File not found for: "+id);
         }
         int byteReader = 0;
         while ((byteReader = file.read(buf)) != -1){
                setResponse(new String(buf, 0 , byteReader));
         }
-        System.out.println("RESPONSE: " +getResponse());
+       file.close();
     }
 
     public void setResponse(String in){
