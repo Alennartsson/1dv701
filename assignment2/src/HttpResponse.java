@@ -36,10 +36,11 @@ public class HttpResponse {
             isImage = false;
         } else{
             String path = request.getFilePath();
-            if(!path.endsWith("/")){
+            if(!path.endsWith("/") && !path.equals("")){
                 path += "/";
             }
             File f = new File(path);
+            System.out.println(f.getAbsolutePath());
             File[] matchingFiles = f.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
