@@ -41,8 +41,16 @@ class tcpClient extends Thread{
                         HttpRequest request = new HttpRequest(finalMessage);
                         System.out.println("Filepath: "+request.getFilePath() +" requestType: " +request.getReq() +" HttpVersion: " +request.getVersion());
                         HttpResponse response = new HttpResponse(request,buf,clientId);;
-                        out.write("HTTP/1.1 200 OK".getBytes("UTF-8"));
-                        out.write(response.getResponse().getBytes("UTF-8"));             //Send that message to the client, this is done untill the hole message is sent.
+                        out.write("HTTP/1.1 200 OK /r/n".getBytes());
+                        if(response.isImage() == true){
+                            String test = "HTTP/1.1 200 OK \r\nContent-Type: image/png \r\nContent-Length: "+response.getData().length+" \r\n\r\n";
+                            System.out.println(test.toString());
+                            System.out.println(response.getData());
+                            out.write(test.getBytes());
+                            out.write(response.getData());
+                        }else{
+                            out.write(response.getResponse().getBytes("UTF-8"));             //Send that message to the client, this is done untill the hole message is sent.
+                        }
                     }
                 }catch (Exception e){
                     System.out.printf("Client ["+clientId+"] disconnected ");       //If we disconnect in the middel of a transfer we need to break
