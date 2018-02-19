@@ -1,16 +1,14 @@
 public class HttpRequest {
 
-    private String filePath;
-    private String req;
-    private String version;
+    private String filePath ="";
+    private String req = "";
+    private String version = "";
 
     public HttpRequest(String path){
-
         String[] tmp = path.split("\n");
         setReq(tmp[0].split(" ")[0]);
         setFilePath(tmp[0].split(" ")[1].substring(1));
         setVersion(tmp[0].split(" ")[2]);
-
     }
 
     private void setReq(String req){

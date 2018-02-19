@@ -4,10 +4,11 @@ import java.io.IOException;
 
 public class HttpResponse {
 
-    private String response;
+    public String response;
 
     public HttpResponse(HttpRequest request, byte[] buf , int id) throws IOException {
         FileInputStream file = null;
+        System.out.println(System.getProperty("user.dir"));
         try {
             file = new FileInputStream(request.getFilePath());
         } catch (FileNotFoundException e) {

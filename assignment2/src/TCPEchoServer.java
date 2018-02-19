@@ -8,7 +8,6 @@ public class TCPEchoServer {
     public static void main(String[] args) throws IOException, InterruptedException {
         ServerSocket conectionSocket = new ServerSocket(MYPORT);  //Create a socket with the used ip
         int id = 1; //Id that is used to give the clients id.
-
         while (true) {      //While loop that waits for connection and starts a new thread if conneceted
             Socket connectionSocket = conectionSocket.accept(); //Waits for a connection and creates a new socket for each connection
             System.out.println("Client ["+id+"] connected!");
@@ -42,8 +41,8 @@ class tcpClient extends Thread{
                         HttpRequest request = new HttpRequest(finalMessage);
                         System.out.println("Filepath: "+request.getFilePath() +" requestType: " +request.getReq() +" HttpVersion: " +request.getVersion());
                         HttpResponse response = new HttpResponse(request,buf,clientId);;
-                        out.write("HTTP/1.1 200 OK".getBytes());
-                        out.write(response.getResponse().getBytes());             //Send that message to the client, this is done untill the hole message is sent.
+                        out.write("HTTP/1.1 200 OK".getBytes("UTF-8"));
+                        out.write(response.getResponse().getBytes("UTF-8"));             //Send that message to the client, this is done untill the hole message is sent.
                     }
                 }catch (Exception e){
                     System.out.printf("Client ["+clientId+"] disconnected ");       //If we disconnect in the middel of a transfer we need to break
