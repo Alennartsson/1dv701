@@ -75,4 +75,5 @@ public class HttpResponse {
     public byte[] getData() {
         return data;
     }
+
 }
