@@ -41,8 +41,10 @@ class tcpClient extends Thread{
                         finalMessage = new String(buf, 0, byteReader);      //Add that package to the string
                         HttpRequest request = new HttpRequest(finalMessage);
                         System.out.println("Filepath: "+request.getFilePath() +" requestType: " +request.getReq() +" HttpVersion: " +request.getVersion());
-                        System.out.println("finalmessage: "+finalMessage);
-                        out.write(finalMessage.getBytes());             //Send that message to the client, this is done untill the hole message is sent.
+                        HttpResponse response = new HttpResponse(request,buf);;
+                        out.write("HTTP/1.1 200 OK".getBytes());
+                        out.write(response.getResponse().getBytes());             //Send that message to the client, this is done untill the hole message is sent.
+
                         System.out.printf("TCP echo request from %s", tcpSocket.getInetAddress());
                         System.out.printf(" using port %d\n", tcpSocket.getPort());
                         System.out.println("Received message: " + finalMessage.length() + " bytes" +" "+finalMessage);

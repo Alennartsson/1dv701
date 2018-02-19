@@ -8,7 +8,7 @@ public class HttpRequest {
 
         String[] tmp = path.split("\n");
         setReq(tmp[0].split(" ")[0]);
-        setFilePath(tmp[0].split(" ")[1]);
+        setFilePath(tmp[0].split(" ")[1].substring(1));
         setVersion(tmp[0].split(" ")[2]);
 
     }
