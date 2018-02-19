@@ -36,8 +36,10 @@ public class HttpResponse {
             isImage = false;
         } else{
             String path = request.getFilePath();
+            if(path.isEmpty()){
+                path +=System.getProperty("user.dir");
+            }
             File f = new File(path);
-            System.out.println(f.getAbsolutePath());
             File[] matchingFiles = f.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
