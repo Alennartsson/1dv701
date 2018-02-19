@@ -3,7 +3,7 @@ import java.net.*;
 
 
 public class TCPEchoServer {
-    public static final int MYPORT = 4950;
+    public static final int MYPORT = 8888;
 
     public static void main(String[] args) throws IOException {
         ServerSocket conectionSocket = new ServerSocket(MYPORT);  //Create a socket with the used ip
@@ -39,6 +39,7 @@ class tcpClient extends Thread{
                     int byteReader = in.read(buf);      //We read the received package from the client
                     if (byteReader != -1) {     //If that package isnt lower than 0, lower than 0 means that it dont contain any message.Then we should load a new package.
                         finalMessage = new String(buf, 0, byteReader);      //Add that package to the string
+                        System.out.println("finalmessage: "+finalMessage);
                         out.write(finalMessage.getBytes());             //Send that message to the client, this is done untill the hole message is sent.
                         System.out.printf("TCP echo request from %s", tcpSocket.getInetAddress());
                         System.out.printf(" using port %d\n", tcpSocket.getPort());
