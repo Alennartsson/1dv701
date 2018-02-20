@@ -59,23 +59,29 @@ public class HttpResponse {
                         return name.startsWith("index") && name.endsWith(".html") || name.endsWith(".htm");
                     }
                 });
-                if (matchingFiles.length == 0) {
-                    header.setHttpResponse("404");
-                    isImage = false;
-                } else {
-                    header.setHttpResponse("200");
-                    file = new FileInputStream(matchingFiles[0].getAbsolutePath());
-                    while ((byteReader = file.read(buf)) != -1) {
-                        setResponse(new String(buf, 0, byteReader));
+
+                try{
+                    if (matchingFiles.length == 0) {
+                        System.out.println("sadsaa");
+                        header.setHttpResponse("404");
+                        isImage = false;
+                    } else {
+                        header.setHttpResponse("200");
+                        file = new FileInputStream(matchingFiles[0].getAbsolutePath());
+                        while ((byteReader = file.read(buf)) != -1) {
+                            setResponse(new String(buf, 0, byteReader));
+                        }
+                        isImage = false;
                     }
-                    isImage = false;
+                }catch (Exception e){
+                    header.setHttpResponse("404");
                 }
+
             }
             try {
                 file.close();
             } catch (Exception e) {
             }
-
         }
     }
 
