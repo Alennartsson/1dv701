@@ -13,6 +13,6 @@ public class Header {
     }
 
     public String getLength(){
-        return "ContentLength: " + length + " \r\n";
+        return "Content-Length: " + length + " \r\n";
     }
 }
