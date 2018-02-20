@@ -45,12 +45,15 @@ class tcpClient extends Thread{
                         //out.write("HTTP/1.1 200 OK /r/n".getBytes());
                         if(response.isImage() == true){
                           //  String test = "HTTP/1.1 200 OK \r\nContent-Type: image/png \r\nContent-Length: "+response.getData().length+" \r\n\r\n";
+                            System.out.println("Där");
                             System.out.println("header: "+header.getHeader());
                             out.write(header.getHeader().getBytes());
                             out.write(response.getData());
                         }else{
+                            System.out.println("Här");
                             System.out.println("Response: "+header.getHttpResponse());
                             out.write(header.getHttpResponse().getBytes());
+                            if(response.isIs302()){out.write(header.getLocation().getBytes());}
                             out.write(response.getResponse().getBytes("UTF-8"));             //Send that message to the client, this is done untill the hole message is sent.
                         }
                     }
