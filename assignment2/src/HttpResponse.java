@@ -41,7 +41,6 @@ public class HttpResponse {
             }
             File f = new File(path);
             File[] matchingFiles = f.listFiles(new FileFilter() {
-                @Override
                 public boolean accept(File pathname) {
                     String name = pathname.getName().toLowerCase();
                     return name.startsWith("index") && name.endsWith(".html") || name.endsWith(".htm");

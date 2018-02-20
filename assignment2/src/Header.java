@@ -1,10 +1,18 @@
 public class Header {
 
-    public String getType(String type, String str){
-        return "Content-Type: " + type + " " + str + " \r\n";
+    private long length;
+    private String type;
+
+    public Header(String type, long length){
+        this.type = type;
+        this.length = length;
     }
 
-    public String getLength(long length, String str){
-        return "ContentLength: " + length + " " + str + " \r\n";
+    public String getType(){
+        return "Content-Type: " + type + " \r\n";
+    }
+
+    public String getLength(){
+        return "ContentLength: " + length + " \r\n";
     }
 }
