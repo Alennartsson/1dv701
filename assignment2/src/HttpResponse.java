@@ -7,20 +7,26 @@ public class HttpResponse {
     private boolean isImage = false;
     private FileInputStream file = null;
 
-
-    public HttpResponse(HttpRequest request, byte[] buf , int id) throws IOException {
+    public HttpResponse(HttpRequest request, byte[] buf , int id, Header header) throws IOException {
+        if(check403(request.getFilePath())){
+            header.setHttpResponse("403");
+        }
         int byteReader = 0;
         if(request.getFilePath().matches(".*.png") || request.getFilePath().matches(".*.ico") ){
+            if(request.getFilePath().matches(".*.png")){header.setType("image/png"); }else{
+                header.setType("image/ico");
+            }
             try {
                 file = new FileInputStream(request.getFilePath());
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 System.out.println("File not found for: "+id);
             }
-
+            header.setHttpResponse("200");
             data = new byte[file.available()];
             file.read(data);
             isImage = true;
+            header.setLength(getData().length);
         }
         else if(request.getFilePath().matches(".*.html") || request.getFilePath().matches(".*.htm")){
             try {
@@ -29,7 +35,7 @@ public class HttpResponse {
                 e.printStackTrace();
                 System.out.println("File not found for: "+id);
             }
-
+            header.setHttpResponse("200");
             while ((byteReader = file.read(buf)) != -1){
                 setResponse(new String(buf, 0 , byteReader));
             }
@@ -50,6 +56,7 @@ public class HttpResponse {
             if(matchingFiles.length == 0){
                 System.out.println("cant find index file!");
             }else {
+                header.setHttpResponse("200");
                 file = new FileInputStream(matchingFiles[0].getAbsolutePath());
                 while ((byteReader = file.read(buf)) != -1) {
                     setResponse(new String(buf, 0, byteReader));
@@ -60,6 +67,14 @@ public class HttpResponse {
 
        file.close();
     }
+
+    public boolean check403(String filePath){
+        if(filePath.startsWith("Root") || filePath.startsWith(System.getProperty("user.dir")+"Root")){
+            return false;
+        }
+        return  true;
+    }
+
 
     public void setResponse(String in){
         response = in;

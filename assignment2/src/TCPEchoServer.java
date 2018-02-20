@@ -40,15 +40,17 @@ class tcpClient extends Thread{
                         finalMessage = new String(buf, 0, byteReader);      //Add that package to the string
                         HttpRequest request = new HttpRequest(finalMessage);
                         System.out.println("Filepath: "+request.getFilePath() +" requestType: " +request.getReq() +" HttpVersion: " +request.getVersion());
-                        HttpResponse response = new HttpResponse(request,buf,clientId);;
-                        out.write("HTTP/1.1 200 OK /r/n".getBytes());
+                        Header header = new Header();
+                        HttpResponse response = new HttpResponse(request,buf,clientId, header);;
+                        //out.write("HTTP/1.1 200 OK /r/n".getBytes());
                         if(response.isImage() == true){
-                            String test = "HTTP/1.1 200 OK \r\nContent-Type: image/png \r\nContent-Length: "+response.getData().length+" \r\n\r\n";
-                            System.out.println(test.toString());
-                            System.out.println(response.getData());
-                            out.write(test.getBytes());
+                          //  String test = "HTTP/1.1 200 OK \r\nContent-Type: image/png \r\nContent-Length: "+response.getData().length+" \r\n\r\n";
+                            System.out.println("header: "+header.getHeader());
+                            out.write(header.getHeader().getBytes());
                             out.write(response.getData());
                         }else{
+                            System.out.println("Response: "+header.getHttpResponse());
+                            out.write(header.getHttpResponse().getBytes());
                             out.write(response.getResponse().getBytes("UTF-8"));             //Send that message to the client, this is done untill the hole message is sent.
                         }
                     }
