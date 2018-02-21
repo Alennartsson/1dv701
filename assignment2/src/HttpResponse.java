@@ -2,7 +2,7 @@ import java.io.*;
 
 public class HttpResponse {
 
-    public String response;
+    private String response;
     private byte[] data;
     private boolean isImage = false;
     private boolean is302 = false;
@@ -85,22 +85,16 @@ public class HttpResponse {
         }
     }
 
-    public boolean check403(String filePath){
-        if(filePath.toLowerCase().startsWith("root") || filePath.toLowerCase().startsWith(System.getProperty("user.dir").toLowerCase()+"root")){
-            return true;
-        }
-        return  false;
+    private boolean check403(String filePath){
+        return filePath.toLowerCase().startsWith("root") || filePath.toLowerCase().startsWith(System.getProperty("user.dir").toLowerCase() + "root");
     }
 
-    public boolean check302(String filePath){
-        if(filePath.toLowerCase().startsWith("google") || filePath.toLowerCase().startsWith(System.getProperty("user.dir").toLowerCase()+"google")){
-            return true;
-        }
-        return  false;
+    private boolean check302(String filePath){
+        return filePath.toLowerCase().startsWith("google") || filePath.toLowerCase().startsWith(System.getProperty("user.dir").toLowerCase() + "google");
     }
 
 
-    public void setResponse(String in){
+    private void setResponse(String in){
         response = in;
     }
 

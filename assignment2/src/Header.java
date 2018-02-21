@@ -18,16 +18,22 @@ public class Header {
     }
 
     public void setHttpResponse(String httpCode){
-        if(httpCode.equals("403")){
-            httpResponse = "HTTP/1.1 403 Forbidden "+"\r\n";
-        }else if(httpCode.equals("500")){
-            httpResponse = "HTTP/1.1 500 Internal Server Error "+"\r\n";
-        }else if(httpCode.equals("404")){
-            httpResponse = "HTTP/1.1 404 NOT FOUND "+"\r\n";
-        }else if(httpCode.equals("200")){
-            httpResponse = "HTTP/1.1 200 OK "+"\r\n";
-        }else if(httpCode.equals("302")){
-            httpResponse = "HTTP/1.1 302 Found "+"\r\n";
+        switch (httpCode) {
+            case "403":
+                httpResponse = "HTTP/1.1 403 Forbidden " + "\r\n";
+                break;
+            case "500":
+                httpResponse = "HTTP/1.1 500 Internal Server Error " + "\r\n";
+                break;
+            case "404":
+                httpResponse = "HTTP/1.1 404 NOT FOUND " + "\r\n";
+                break;
+            case "200":
+                httpResponse = "HTTP/1.1 200 OK " + "\r\n";
+                break;
+            case "302":
+                httpResponse = "HTTP/1.1 302 Found " + "\r\n";
+                break;
         }
     }
 

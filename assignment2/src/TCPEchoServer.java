@@ -38,7 +38,7 @@ class tcpClient extends Thread{
             //while(true){    //This loop should keep looping untill the client is disconnected.
                 try {
                     try{
-                        if(test500 == true) { throw new IOException();}
+                        if(test500) { throw new IOException();}
                         int byteReader = in.read(buf);      //We read the received package from the client
                         if (byteReader != -1) {     //If that package isnt lower than 0, lower than 0 means that it dont contain any message.Then we should load a new package.
                             finalMessage = new String(buf, 0, byteReader);      //Add that package to the string
@@ -46,7 +46,7 @@ class tcpClient extends Thread{
                             System.out.println("Filepath: "+request.getFilePath() +" requestType: " +request.getReq() +" HttpVersion: " +request.getVersion());
                             HttpResponse response = new HttpResponse(request,buf,clientId, header);;
                             //out.write("HTTP/1.1 200 OK /r/n".getBytes());
-                            if(response.isImage() == true){
+                            if(response.isImage()){
                                 //  String test = "HTTP/1.1 200 OK \r\nContent-Type: image/png \r\nContent-Length: "+response.getData().length+" \r\n\r\n";
                                 System.out.println("Där");
                                 System.out.println("header: "+header.getHeader());
