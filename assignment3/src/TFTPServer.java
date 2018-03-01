@@ -1,4 +1,7 @@
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -147,33 +150,73 @@ public class TFTPServer
 	 */
 	private void HandleRQ(DatagramSocket sendSocket, String requestedFile, int opcode)
 	{
-        int block = 1;
-		if(opcode == OP_RRQ)
-		{
+		String[] reSplit = requestedFile.split("\0");
+		String file = reSplit[0];
+		String mode = reSplit[1];
+		byte[] buf;
 
-			// See "TFTP Formats" in TFTP specification for the DATA and ACK packet contents
-			boolean result = send_DATA_receive_ACK(params);
+
+        if (mode.equals("octet")){
+			if(opcode == OP_RRQ)
+			{
+				int block = 0;
+				// See "TFTP Formats" in TFTP specification for the DATA and ACK packet contents
+				boolean result = send_DATA_receive_ACK(sendSocket, requestedFile, ++block);
+			}
+			else if (opcode == OP_WRQ)
+			{
+				int block = 0;
+				boolean result = receive_DATA_send_ACK(sendSocket, requestedFile, block);
+			}
+			else
+			{
+				System.err.println("Invalid request. Sending an error packet.");
+				// See "TFTP Formats" in TFTP specification for the ERROR packet contents
+				//send_ERR(params);
+				return;
+			}
 		}
-		else if (opcode == OP_WRQ)
-		{
-			boolean result = receive_DATA_send_ACK(params);
-		}
-		else
-		{
-			System.err.println("Invalid request. Sending an error packet.");
-			// See "TFTP Formats" in TFTP specification for the ERROR packet contents
-			//send_ERR(params);
-			return;
-		}
+
 	}
 
 	/**
 	To be implemented
 	*/
-	private boolean send_DATA_receive_ACK(DatagramSocket sendSocket, String requestedFile, int blockNumber, ByteBuffer data)
-	{return true;}
+	private boolean send_DATA_receive_ACK(DatagramSocket socket, String file, int block) {
 
-	private boolean receive_DATA_send_ACK()
+		try {
+		String[] reSplit = file.split("\0");
+		File fileName = new File(reSplit[0]);
+
+			FileInputStream in = new FileInputStream(fileName);
+			//buf equals 512 to leave space for the op code and block #
+			byte[] buf = new byte[BUFSIZE - 4];
+			int byteReader = in.read(buf);
+
+			//DATA packet contains Opcode, Block # and data
+			ByteBuffer data = ByteBuffer.allocate(BUFSIZE);
+			data.putShort((short) OP_DAT);
+			data.putShort((short) block);
+			data.put(buf);
+
+			//send packet
+			DatagramPacket packet = new DatagramPacket(data.array(), byteReader + 4);
+			socket.send(packet);
+
+			//receive acknowledgement
+			ByteBuffer ack = ByteBuffer.allocate(OP_ACK);
+			DatagramPacket ackReceive = new DatagramPacket(ack.array(), ack.array().length);
+			socket.receive(ackReceive);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
+		return true;
+	}
+
+	private boolean receive_DATA_send_ACK(DatagramSocket socket, String file, int block)
 	{return true;}
 
 	private void send_ERR()
