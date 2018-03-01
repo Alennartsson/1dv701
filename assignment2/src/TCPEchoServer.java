@@ -21,7 +21,7 @@ class tcpClient extends Thread{
    private Socket tcpSocket;
    private int clientId;
    private static final int BUFSIZE = 1024;
-   private boolean test500 = false;
+   private boolean test500 = false;          //Set this to true to test error 500
 
    tcpClient(Socket socket, int id){        //Setting the socket and client id
         tcpSocket = socket;
