@@ -1,15 +1,17 @@
-import jdk.javadoc.internal.doclets.formats.html.SourceToHTMLConverter;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 
 public class TFTPServer 
 {
 	public static final int TFTPPORT = 4970;
 	public static final int BUFSIZE = 516;
-	public static final String READDIR = "/home/username/read/"; //custom address at your PC
-	public static final String WRITEDIR = "/home/username/write/"; //custom address at your PC
+	public static final String READDIR = "C:/read/"; //custom address at your PC
+	public static final String WRITEDIR = "C:/read/"; //custom address at your PC
 	// OP codes
 	public static final int OP_RRQ = 1;
 	public static final int OP_WRQ = 2;
@@ -70,9 +72,9 @@ public class TFTPServer
 						// Connect to client
 						sendSocket.connect(clientAddress);						
 						
-						System.out.printf("%s request for %s from %s using port %d\n",
+						System.out.printf("%s request for %s from %s using port\n",
 								(reqtype == OP_RRQ)?"Read":"Write",
-								clientAddress.getHostName(), clientAddress.getPort());  
+								clientAddress.getHostName(), clientAddress.getPort());
 								
 						// Read request
 						if (reqtype == OP_RRQ) 
@@ -131,6 +133,7 @@ public class TFTPServer
 		short opcode = wrap.getShort();
 		String fileName = new String(buf, 2, buf.length-2);
 		requestedFile.append(fileName);
+        System.out.println(opcode);
 
 		return opcode;
 	}
@@ -144,14 +147,16 @@ public class TFTPServer
 	 */
 	private void HandleRQ(DatagramSocket sendSocket, String requestedFile, int opcode)
 	{
+        int block = 1;
 		if(opcode == OP_RRQ)
 		{
+
 			// See "TFTP Formats" in TFTP specification for the DATA and ACK packet contents
-			//boolean result = send_DATA_receive_ACK(params);
+			boolean result = send_DATA_receive_ACK(params);
 		}
 		else if (opcode == OP_WRQ)
 		{
-			//boolean result = receive_DATA_send_ACK(params);
+			boolean result = receive_DATA_send_ACK(params);
 		}
 		else
 		{
@@ -165,7 +170,7 @@ public class TFTPServer
 	/**
 	To be implemented
 	*/
-	private boolean send_DATA_receive_ACK()
+	private boolean send_DATA_receive_ACK(DatagramSocket sendSocket, String requestedFile, int blockNumber, ByteBuffer data)
 	{return true;}
 
 	private boolean receive_DATA_send_ACK()
