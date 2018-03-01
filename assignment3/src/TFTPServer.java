@@ -1,8 +1,5 @@
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -136,7 +133,6 @@ public class TFTPServer
 		short opcode = wrap.getShort();
 		String fileName = new String(buf, 2, buf.length-2);
 		requestedFile.append(fileName);
-        System.out.println(opcode);
 
 		return opcode;
 	}
@@ -184,40 +180,112 @@ public class TFTPServer
 	*/
 	private boolean send_DATA_receive_ACK(DatagramSocket socket, String file, int block) {
 
+		boolean checkSize = false;
 		try {
 		String[] reSplit = file.split("\0");
 		File fileName = new File(reSplit[0]);
 
 			FileInputStream in = new FileInputStream(fileName);
-			//buf equals 512 to leave space for the op code and block #
-			byte[] buf = new byte[BUFSIZE - 4];
-			int byteReader = in.read(buf);
 
-			//DATA packet contains Opcode, Block # and data
-			ByteBuffer data = ByteBuffer.allocate(BUFSIZE);
-			data.putShort((short) OP_DAT);
-			data.putShort((short) block);
-			data.put(buf);
+			while(true) {
 
-			//send packet
-			DatagramPacket packet = new DatagramPacket(data.array(), byteReader + 4);
-			socket.send(packet);
+				//buf equals 512 to leave space for the op code and block #
+				byte[] buf = new byte[BUFSIZE - 4];
+				int byteReader = in.read(buf);
+				if(byteReader < 512){
+					checkSize = true;
+				}
 
-			//receive acknowledgement
-			ByteBuffer ack = ByteBuffer.allocate(OP_ACK);
-			DatagramPacket ackReceive = new DatagramPacket(ack.array(), ack.array().length);
-			socket.receive(ackReceive);
+				//DATA packet contains Opcode, Block # and data
+				ByteBuffer data = ByteBuffer.allocate(BUFSIZE);
+				data.putShort((short) OP_DAT);
+				data.putShort((short) block);
+				data.put(buf);
 
+				//send packet
+				try{
+					socket.setSoTimeout(3000);
+					DatagramPacket packet = new DatagramPacket(data.array(), byteReader + 4);
+					socket.send(packet);
+
+					//receive acknowledgement
+					ByteBuffer ack = ByteBuffer.allocate(OP_ACK);
+					DatagramPacket ackReceive = new DatagramPacket(ack.array(), ack.array().length);
+					socket.receive(ackReceive);
+
+					ByteBuffer buffer = ByteBuffer.wrap(ackReceive.getData());
+					short opcode = buffer.getShort();
+					short ackBlock = buffer.getShort();
+
+					if(ackBlock == block){ //checks that the ack and the data has the same block#
+						block++;
+					}
+
+					if(checkSize){
+						break;
+					}
+				}catch(SocketTimeoutException e){
+					e.printStackTrace();
+					return false;
+				}
+
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-
 		return true;
 	}
 
-	private boolean receive_DATA_send_ACK(DatagramSocket socket, String file, int block)
-	{return true;}
+	private boolean receive_DATA_send_ACK(DatagramSocket socket, String file, int block) {
+
+		boolean checkSize = false;
+
+		String[] reSplit = file.split("\0");
+		File fileName = new File(reSplit[0]);
+
+		try {
+			FileOutputStream out = new FileOutputStream(fileName);
+
+			ByteBuffer ack = ByteBuffer.allocate(OP_ACK);
+			ack.putShort((short) OP_ACK);
+			ack.putShort((short) block);
+
+			DatagramPacket packet = new DatagramPacket(ack.array(), ack.array().length);
+			socket.send(packet);
+
+			while (true){
+				if(packet.getData().length < 512){
+					checkSize = true;
+				}
+				byte[] data = new byte[BUFSIZE];
+				DatagramPacket dataReceive = new DatagramPacket(data, data.length);
+				socket.receive(dataReceive);
+
+				ByteBuffer buffer = ByteBuffer.wrap(data);
+				short opcode = buffer.getShort();
+
+				if(opcode == OP_DAT){
+					out.write(packet.getData());
+					out.flush();
+
+					ByteBuffer sendAck = ByteBuffer.allocate(OP_ACK);
+					sendAck.putShort((short) OP_ACK);
+					sendAck.putShort(buffer.getShort());
+					DatagramPacket acknowledgment = new DatagramPacket(sendAck.array(), sendAck.array().length);
+					socket.send(acknowledgment);
+				}
+
+				if(checkSize){
+					break;
+				}
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
 
 	private void send_ERR()
 	{}
