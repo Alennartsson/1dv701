@@ -169,7 +169,11 @@ public class TFTPServer
 			{
 				System.err.println("Invalid request. Sending an error packet.");
 				// See "TFTP Formats" in TFTP specification for the ERROR packet contents
-				//send_ERR(params);
+				try {
+					send_ERR(sendSocket,"Error packet sent", 0);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				return;
 			}
 		}
@@ -222,6 +226,10 @@ public class TFTPServer
 					ByteBuffer buffer = ByteBuffer.wrap(ackReceive.getData());
 					short opcode = buffer.getShort();
 					short ackBlock = buffer.getShort();
+					if(opcode == OP_ERR){
+						send_ERR(socket, "Error packet received",0);
+						break;
+					}
 
 					if (ackBlock == block) { //checks that the ack and the data has the same block#
 						block++;
@@ -233,6 +241,8 @@ public class TFTPServer
 				} catch (SocketTimeoutException e) {
 					e.printStackTrace();
 					return false;
+				}catch (IOException e){
+					send_ERR(socket,"Access violation", 2);
 				}
 			}
 		}
