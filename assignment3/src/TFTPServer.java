@@ -157,18 +157,15 @@ public class TFTPServer
 			if(opcode == OP_RRQ)
 			{
 				int block = 0;
-				// See "TFTP Formats" in TFTP specification for the DATA and ACK packet contents
-				boolean result = send_DATA_receive_ACK(sendSocket, requestedFile, ++block);
+				send_DATA_receive_ACK(sendSocket, requestedFile, ++block);
 			}
 			else if (opcode == OP_WRQ)
 			{
 				int block = 0;
-				boolean result = receive_DATA_send_ACK(sendSocket, requestedFile, block);
+				receive_DATA_send_ACK(sendSocket, requestedFile, block);
 			}
-			else
+			else		//If the opcode isnt a read request or write request we should send back error 0
 			{
-				System.err.println("Invalid request. Sending an error packet.");
-				// See "TFTP Formats" in TFTP specification for the ERROR packet contents
 				try {
 					send_ERR(sendSocket,"Error packet sent", 0);
 				} catch (IOException e) {
@@ -180,80 +177,73 @@ public class TFTPServer
 
 	}
 
-	/**
-	To be implemented
-	*/
 	private boolean send_DATA_receive_ACK(DatagramSocket socket, String file, int block) {
-
 		boolean checkSize = false;
 		try {
 			String[] reSplit = file.split("\0");
 			File fileName = new File(reSplit[0]);
 
-			if (!fileName.exists()) {
+			if (!fileName.exists()) {		 //Checking if the file exist, if not send error 1 to client
 				send_ERR(socket, "File not found!", 1);
 
+			}else if (!fileName.canWrite() && !fileName.canRead()) {		//Checking write and read permissions
+				send_ERR(socket, "Access violation", 2);
+				System.out.println("test");
 			} else {
-			FileInputStream in = new FileInputStream(fileName);
+				FileInputStream in = new FileInputStream(fileName);
 
+				while (true) {
 
-			while (true) {
-
-				//buf equals 512 to leave space for the op code and block #
-				byte[] buf = new byte[BUFSIZE - 4];
-				int byteReader = in.read(buf);
-				if (byteReader < 512) {
-					checkSize = true;
-				}
-
-				//DATA packet contains Opcode, Block # and data
-				ByteBuffer data = ByteBuffer.allocate(BUFSIZE);
-				data.putShort((short) OP_DAT);
-				data.putShort((short) block);
-				data.put(buf);
-
-				try {
-					//send packet
-					socket.setSoTimeout(3000);
-					DatagramPacket packet = new DatagramPacket(data.array(), byteReader + 4);
-					socket.send(packet);
-
-					//receive acknowledgement
-					ByteBuffer ack = ByteBuffer.allocate(OP_ACK);
-					DatagramPacket ackReceive = new DatagramPacket(ack.array(), ack.array().length);
-					socket.receive(ackReceive);
-
-					ByteBuffer buffer = ByteBuffer.wrap(ackReceive.getData());
-					short opcode = buffer.getShort();
-					short ackBlock = buffer.getShort();
-					if(opcode == OP_ERR){
-						send_ERR(socket, "Error packet received",0);
-						break;
+					//buf equals 512 to leave space for the op code and block #
+					byte[] buf = new byte[BUFSIZE - 4];
+					int byteReader = in.read(buf);
+					if (byteReader < 512) {
+						checkSize = true;
 					}
 
-					if (ackBlock == block) { //checks that the ack and the data has the same block#
-						block++;
-					}
+					//DATA packet contains Opcode, Block # and data
+					ByteBuffer data = ByteBuffer.allocate(BUFSIZE);
+					data.putShort((short) OP_DAT);
+					data.putShort((short) block);
+					data.put(buf);
 
-					if (checkSize) {
-						break;
+					try {
+						//send packet
+						DatagramPacket packet = new DatagramPacket(data.array(), byteReader + 4);
+						socket.send(packet);
+
+						//receive acknowledgement
+						ByteBuffer ack = ByteBuffer.allocate(OP_ACK);
+						DatagramPacket ackReceive = new DatagramPacket(ack.array(), ack.array().length);
+						socket.setSoTimeout(3000);  //Setting the timeout time for receiving ack to 3 sec, if this takes longer a SocketTimeoutException is sent. Check row 238
+						socket.receive(ackReceive);
+
+						ByteBuffer buffer = ByteBuffer.wrap(ackReceive.getData());
+						short opcode = buffer.getShort();
+						short ackBlock = buffer.getShort();
+						if (opcode == OP_ERR) {
+							send_ERR(socket,"Error packet sent", 0);
+							break;
+						}
+						if (ackBlock == block) { //checks that the ack and the data has the same block#
+							block++;
+						}
+						if (checkSize) {
+							break;
+						}
+					} catch (SocketTimeoutException e) { //Since we dont want to trow a error to the client we just catch this error and let the loop send the same package again.
+						System.out.println("Socket timeout, re-transmitting the previous packet");
 					}
-				} catch (SocketTimeoutException e) {
-					e.printStackTrace();
-					return false;
-				}catch (IOException e){
-					send_ERR(socket,"Access violation", 2);
 				}
 			}
-		}
-		} catch (IOException e) {
+		}catch (IOException e) {
 			e.printStackTrace();
 		}
 		return true;
 	}
 
 	private boolean receive_DATA_send_ACK(DatagramSocket socket, String file, int block) {
-
+		System.out.println("put");
 		boolean checkSize = false;
 
 		String[] reSplit = file.split("\0");
@@ -265,7 +255,13 @@ public class TFTPServer
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}else {
+		}else if (!fileName.canWrite() && !fileName.canRead()){		//Checking write and read permissons.
+			try {
+				send_ERR(socket, "Access violation", 2);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
 			try {
 				FileOutputStream out = new FileOutputStream(fileName);
 
@@ -275,7 +271,6 @@ public class TFTPServer
 
 				DatagramPacket packet = new DatagramPacket(ack.array(), ack.array().length);  //Sending ack
 				socket.send(packet);
-
 
 				while (true) {
 					byte[] data = new byte[BUFSIZE];
