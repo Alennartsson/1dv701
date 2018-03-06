@@ -5,6 +5,7 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.AccessController;
 import java.util.Arrays;
 
 
@@ -80,7 +81,7 @@ public class TFTPServer
 								
 						// Read request
 						if (reqtype == OP_RRQ) 
-						{      
+						{
 							requestedFile.insert(0, READDIR);
 							HandleRQ(sendSocket, requestedFile.toString(), OP_RRQ);
 						}
@@ -248,22 +249,24 @@ public class TFTPServer
 
 		String[] reSplit = file.split("\0");
 		File fileName = new File(reSplit[0]);
-
+		System.out.println(fileName.getParent());
 		if(fileName.exists()){
 			try {
 				send_ERR(socket,  "File already exist!" ,6);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}else if (!fileName.canWrite() && !fileName.canRead()){		//Checking write and read permissons.
-			try {
-				send_ERR(socket, "Access violation", 2);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+
+		//}else if (){		//Checking write and read permissons.
+			//try {
+			//	send_ERR(socket, "Access violation", 2);
+			//	System.out.println("här");
+			//} catch (IOException e) {
+			//	e.printStackTrace();
+			//}
 		} else {
 			try {
-				FileOutputStream out = new FileOutputStream(fileName);
+				FileOutputStream out = new FileOutputStream(fileName);		//If this file cannot be found it means that it didnt have permissions to create it, then we catch the FileNotFoundException and send a error message.
 
 				ByteBuffer ack = ByteBuffer.allocate(OP_ACK);
 				ack.putShort((short) OP_ACK);
@@ -301,6 +304,12 @@ public class TFTPServer
 				out.flush();
 				out.close();
 
+			} catch (FileNotFoundException e) {
+				try {
+					send_ERR(socket, "Access violation", 2);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
