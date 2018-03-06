@@ -165,7 +165,7 @@ public class TFTPServer
 				int block = 0;
 				receive_DATA_send_ACK(sendSocket, requestedFile, block);
 			}
-			else		//If the opcode isnt a read request or write request we should send back error 0
+			else		//If the opcode is not a read request or write request we should send back error 0
 			{
 				try {
 					send_ERR(sendSocket,"Error packet sent", 0);
@@ -232,7 +232,7 @@ public class TFTPServer
 						if (checkSize) {
 							break;
 						}
-					} catch (SocketTimeoutException e) { //Since we dont want to trow a error to the client we just catch this error and let the loop send the same package again.
+					} catch (SocketTimeoutException e) { //Since we don't want to throw a error to the client we just catch this error and let the loop send the same package again.
 						System.out.println("Socket timeout, re-transmitting the previous packet");
 					}
 				}
@@ -244,12 +244,11 @@ public class TFTPServer
 	}
 
 	private boolean receive_DATA_send_ACK(DatagramSocket socket, String file, int block) {
-		System.out.println("put");
+
 		boolean checkSize = false;
 
 		String[] reSplit = file.split("\0");
 		File fileName = new File(reSplit[0]);
-		System.out.println(fileName.getParent());
 		if(fileName.exists()){
 			try {
 				send_ERR(socket,  "File already exist!" ,6);
@@ -257,16 +256,9 @@ public class TFTPServer
 				e.printStackTrace();
 			}
 
-		//}else if (){		//Checking write and read permissons.
-			//try {
-			//	send_ERR(socket, "Access violation", 2);
-			//	System.out.println("här");
-			//} catch (IOException e) {
-			//	e.printStackTrace();
-			//}
 		} else {
 			try {
-				FileOutputStream out = new FileOutputStream(fileName);		//If this file cannot be found it means that it didnt have permissions to create it, then we catch the FileNotFoundException and send a error message.
+				FileOutputStream out = new FileOutputStream(fileName);		//try permission to create, then we catch the IOException and send a error message.
 
 				ByteBuffer ack = ByteBuffer.allocate(OP_ACK);
 				ack.putShort((short) OP_ACK);
@@ -304,14 +296,12 @@ public class TFTPServer
 				out.flush();
 				out.close();
 
-			} catch (FileNotFoundException e) {
+			} catch (IOException e) {
 				try {
 					send_ERR(socket, "Access violation", 2);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		}
 
